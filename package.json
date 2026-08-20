@@ -1,0 +1,12 @@
+{
+  "name": "gather-social-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gather social app",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
