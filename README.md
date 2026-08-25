@@ -4,10 +4,10 @@ Gather is a polished, responsive social media app for sharing thoughts, finding 
 
 ## Run it
 
-Run the backend from this folder:
+Run the app from this folder:
 
 ```powershell
-node server.js
+npm start
 ```
 
 Then open `http://localhost:4173`. The backend uses Node's built-in modules only, so no install step is required.
@@ -22,17 +22,19 @@ Then open `http://localhost:4173`. The backend uses Node's built-in modules only
 - People to follow, direct message actions, conversation history, and chat composer
 - Accessible semantic HTML and mobile layout
 
-The local fallback stores data in `data/db.json`. For permanent cloud users, posts, messages, and images, use the Supabase setup below.
+The project is split into `frontend/` (HTML, CSS, and browser JavaScript), `server.js` (API and static-file server), and `data/` (local development data). The local JSON database is useful for development only. Render's filesystem is ephemeral, so data written there can disappear after a restart or redeploy.
 
 ## Permanent cloud storage with Supabase
 
-1. Create a free Supabase project.
-2. Open the Supabase SQL editor and run `supabase-schema.sql`.
-3. Copy `.env.example` to `.env`.
-4. Fill in `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from Supabase project settings.
-5. Deploy those environment variables in Render.
+1. Create a Supabase project at https://supabase.com.
+2. In Supabase, open **SQL Editor**, paste `supabase-schema.sql`, and run it.
+3. In **Project Settings > API**, copy the project URL and the `service_role` secret.
+4. In Render, open the web service, then **Environment > Add Environment Variable**. Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+5. Redeploy and confirm `https://YOUR-SERVICE.onrender.com/health` returns `{ "status": "ok" }`.
 
-The service-role key must stay on the server and must never be placed in `app.js` or committed to GitHub. The current JSON mode remains available locally until the Supabase adapter is enabled.
+The service-role key must stay on the server and must never be placed in `frontend/app.js` or committed to GitHub. The current JSON mode remains available locally until the Supabase adapter is enabled.
+
+Important: `supabase-schema.sql` creates the hosted database, but this version of the server still reads `data/db.json`. Adding the variables alone does not migrate or activate Supabase. The next backend task is to replace the JSON repository with Supabase queries, then import existing users/posts if they should be retained.
 
 ## Free hosting
 
@@ -41,4 +43,4 @@ The service-role key must stay on the server and must never be placed in `app.js
 3. Select the GitHub repository. Render will use `render.yaml` automatically.
 4. Deploy and open the generated `onrender.com` URL.
 
-The free Render service can sleep when unused, and its local JSON file is not durable across all restarts/redeploys. For permanent accounts, posts, images, and messages, move the data layer to Supabase or another hosted database before production use.
+The free Render service can sleep when unused. Use the hosted database before treating the deployment as production-ready.

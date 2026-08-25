@@ -5,6 +5,7 @@ const crypto = require('crypto');
 
 const PORT = process.env.PORT || 4173;
 const ROOT = __dirname;
+const FRONTEND_ROOT = path.join(ROOT, 'frontend');
 const DB_PATH = path.join(ROOT, 'data', 'db.json');
 const sessions = new Map();
 const mimeTypes = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json' };
@@ -19,15 +20,17 @@ function currentUser(req, db) { const token = req.headers.authorization?.replace
 function send(res, status, body) { res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' }); res.end(JSON.stringify(body)); }
 function readBody(req) { return new Promise((resolve, reject) => { let data = ''; req.on('data', (chunk) => { data += chunk; if (data.length > 1000000) reject(new Error('Request too large')); }); req.on('end', () => { try { resolve(data ? JSON.parse(data) : {}); } catch { reject(new Error('Invalid JSON')); } }); }); }
 function requireAuth(req, res, db) { const user = currentUser(req, db); if (!user) { send(res, 401, { error: 'Please log in first.' }); return null; } return user; }
-function decoratePost(post, db, user) { const author = db.users.find((item) => item.id === post.authorId); return { ...post, name: author.name, handle: author.handle, initials: author.initials, color: author.color, profileImage: author.profileImage || null, liked: post.likes.includes(user.id), likes: post.likes.length, following: user.following.includes(author.id), comments: post.comments.length, shares: post.shares.length, time: relativeTime(post.createdAt) }; }
+function decorateComment(comment, db) { const author = db.users.find((item) => item.id === comment.authorId); return { ...comment, name: author?.name || 'Unknown', handle: author?.handle || '@unknown', initials: author?.initials || '?', color: author?.color || '#d9f36a', profileImage: author?.profileImage || null, time: relativeTime(comment.createdAt) }; }
+function decoratePost(post, db, user) { const author = db.users.find((item) => item.id === post.authorId); const comments = (post.comments || []).map((comment) => decorateComment(comment, db)); return { ...post, name: author.name, handle: author.handle, initials: author.initials, color: author.color, profileImage: author.profileImage || null, liked: post.likes.includes(user.id), likes: post.likes.length, following: user.following.includes(author.id), comments: comments.length, commentItems: comments, shares: post.shares.length, time: relativeTime(post.createdAt) }; }
 function validImage(image) { return !image || (typeof image === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(image) && image.length <= 700000); }
-function relativeTime(timestamp) { const minutes = Math.max(1, Math.floor((Date.now() - timestamp) / 60000)); return minutes < 60 ? `${minutes} min ago` : `${Math.floor(minutes / 60)} hr ago`; }
+function relativeTime(timestamp) { const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000)); const units = [{ limit: 60, size: 1, label: 'second' }, { limit: 3600, size: 60, label: 'minute' }, { limit: 86400, size: 3600, label: 'hour' }, { limit: 604800, size: 86400, label: 'day' }, { limit: 2592000, size: 604800, label: 'week' }, { limit: 31536000, size: 2592000, label: 'month' }, { limit: Infinity, size: 31536000, label: 'year' }]; const unit = units.find((item) => seconds < item.limit); const amount = Math.floor(seconds / unit.size); return `${amount} ${unit.label}${amount === 1 ? '' : 's'} ago`; }
 function conversationSummary(other, user, db) { const messages = db.messages.filter((message) => (message.from === user.id && message.to === other.id) || (message.from === other.id && message.to === user.id)).sort((a, b) => b.createdAt - a.createdAt); const latest = messages[0]; return { ...publicUser(other, db), preview: latest?.text || 'Start a conversation', time: latest ? relativeTime(latest.createdAt) : '' }; }
 
 async function api(req, res, db) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const parts = url.pathname.split('/').filter(Boolean);
   if (req.method === 'OPTIONS') return send(res, 204, {});
+  if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { status: 'ok' });
   if (parts[0] !== 'api') return serveStatic(req, res, url.pathname);
   try {
     if (parts[1] === 'auth' && parts[2] === 'register' && req.method === 'POST') {
@@ -54,6 +57,11 @@ async function api(req, res, db) {
       const body = await readBody(req); const text = String(body.text || '').trim(); if (!text || text.length > 280) return send(res, 400, { error: 'Post text must be between 1 and 280 characters.' }); if (!validImage(body.image)) return send(res, 400, { error: 'Choose a JPG, PNG, or WebP image under 500 KB.' });
       const post = { id: crypto.randomUUID(), authorId: user.id, text, image: body.image || null, likes: [], comments: [], shares: [], createdAt: Date.now() }; db.posts.push(post); saveDb(db); return send(res, 201, decoratePost(post, db, user));
     }
+    if (parts[1] === 'posts' && parts[2] && parts[3] === 'edit' && req.method === 'POST') {
+      const post = db.posts.find((item) => item.id === parts[2]); if (!post) return send(res, 404, { error: 'Post not found.' }); if (post.authorId !== user.id) return send(res, 403, { error: 'Only the post owner can edit it.' });
+      const body = await readBody(req); const text = String(body.text || '').trim(); if (!text || text.length > 280) return send(res, 400, { error: 'Post text must be between 1 and 280 characters.' });
+      post.text = text; saveDb(db); return send(res, 200, decoratePost(post, db, user));
+    }
     if (parts[1] === 'posts' && parts[2] && parts[3] === 'like' && req.method === 'POST') {
       const post = db.posts.find((item) => item.id === parts[2]); if (!post) return send(res, 404, { error: 'Post not found.' }); const index = post.likes.indexOf(user.id); index === -1 ? post.likes.push(user.id) : post.likes.splice(index, 1); saveDb(db); return send(res, 200, decoratePost(post, db, user));
     }
@@ -65,5 +73,5 @@ async function api(req, res, db) {
     send(res, 404, { error: 'API route not found.' });
   } catch (error) { send(res, 500, { error: error.message }); }
 }
-function serveStatic(req, res, pathname) { const requested = pathname === '/' ? '/index.html' : pathname; const filePath = path.join(ROOT, requested); if (!filePath.startsWith(ROOT) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) return send(res, 404, { error: 'Not found' }); res.writeHead(200, { 'Content-Type': mimeTypes[path.extname(filePath)] || 'application/octet-stream' }); fs.createReadStream(filePath).pipe(res); }
+function serveStatic(req, res, pathname) { const requested = pathname === '/' ? '/index.html' : pathname; const filePath = path.join(FRONTEND_ROOT, requested); if (!filePath.startsWith(FRONTEND_ROOT) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) return send(res, 404, { error: 'Not found' }); res.writeHead(200, { 'Content-Type': mimeTypes[path.extname(filePath)] || 'application/octet-stream' }); fs.createReadStream(filePath).pipe(res); }
 http.createServer((req, res) => api(req, res, loadDb())).listen(PORT, () => console.log(`Gather is running at http://localhost:${PORT}`));

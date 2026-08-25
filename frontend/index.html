@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gather is a thoughtful social space for ideas, people, and conversations." />
+  <title>Gather · Find your people</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <section class="auth-screen" id="authScreen">
+    <div class="auth-art"><span class="brand-mark">g</span><p>Ideas feel better<br />when they have<br /><em>somewhere to go.</em></p><span class="auth-orbit orbit-one"></span><span class="auth-orbit orbit-two"></span></div>
+    <div class="auth-panel">
+      <p class="eyebrow">A SOCIAL SPACE FOR REAL PEOPLE</p><h1 id="authTitle">Welcome back.</h1><p class="auth-subtitle" id="authSubtitle">Log in to pick up where you left off.</p>
+      <form id="authForm"><label id="nameField" hidden>Name<input id="nameInput" autocomplete="name" /></label><label>Handle<input id="handleInput" autocomplete="username" placeholder="@yourhandle" required /></label><label>Password<input id="passwordInput" type="password" autocomplete="current-password" required /></label><button class="auth-submit" id="authSubmit" type="submit">Log in <span>↗</span></button></form>
+      <p class="auth-switch" id="authSwitch">New to Gather? <button type="button">Create an account</button></p><p class="auth-error" id="authError" role="alert"></p>
+    </div>
+  </section>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Gather home"><span class="brand-mark">g</span><span>gather</span></a>
+      <label class="search-box" aria-label="Search Gather">
+        <span class="icon">⌕</span>
+        <input id="searchInput" type="search" placeholder="Search people, topics, ideas" />
+        <kbd>/</kbd>
+      </label>
+      <div class="top-actions">
+        <button class="chat-launch" id="chatLaunch" aria-label="Open chats"><span>◌</span><span class="chat-launch-label">Chat</span></button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch theme"><span>☾</span></button>
+        <button class="icon-button notification-button" id="notificationButton" aria-label="Open notifications"><span>♢</span><i></i></button>
+        <button class="profile-chip" id="profileButton" aria-label="Open your profile"><span class="avatar avatar-you">AM</span><span class="profile-name">Avery Miles</span><span class="chevron">⌄</span></button>
+      </div>
+    </header>
+
+    <main class="main-layout" id="top">
+      <aside class="left-rail">
+        <nav class="main-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-view="home"><span class="nav-icon">⌂</span>Home</button>
+          <button class="nav-item" data-view="discover"><span class="nav-icon">✧</span>Discover</button>
+          <button class="nav-item" data-view="messages"><span class="nav-icon">◌</span>Messages <span class="nav-count">3</span></button>
+          <button class="nav-item" data-view="saved"><span class="nav-icon">▱</span>Saved</button>
+        </nav>
+        <div class="rail-rule"></div>
+        <div class="rail-label">Your spaces</div>
+        <button class="space-item" data-space="design-thinkers"><span class="space-dot amber"></span>Design thinkers</button>
+        <button class="space-item" data-space="weekend-runners"><span class="space-dot coral"></span>Weekend runners</button>
+        <button class="space-item" data-space="book-club"><span class="space-dot mint"></span>Book club</button>
+        <button class="create-space"><span>＋</span> Create a space</button>
+        <div class="rail-footer"><span>© 2024 Gather</span><span>About · Privacy</span></div>
+      </aside>
+
+      <section class="feed-column" aria-label="Home feed">
+        <div class="mobile-heading"><div><p class="eyebrow" id="liveDate"></p><h1>Good morning, Avery.</h1></div><button class="icon-button mobile-search" aria-label="Focus search">⌕</button></div>
+        <div class="feed-tabs" role="tablist"><button class="feed-tab active" data-filter="for-you">For you</button><button class="feed-tab" data-filter="following">Following</button><button class="feed-tab" data-filter="latest">Latest</button></div>
+
+        <section class="composer panel">
+          <div class="composer-top"><span class="avatar avatar-you">AM</span><button class="composer-input" id="composerTrigger">What’s on your mind?</button></div>
+          <div class="composer-actions"><button data-compose="Photo"><span class="action-glyph photo">▧</span>Photo</button><button data-compose="Question"><span class="action-glyph question">?</span>Question</button><button data-compose="Feeling"><span class="action-glyph feeling">☻</span>Feeling</button><button class="post-button" id="postButton">Post <span>↗</span></button></div>
+        </section>
+
+        <div class="feed-header"><h2 id="feedTitle">Your daily mix</h2><button class="sort-button" id="sortButton">Curated <span>⌄</span></button></div>
+        <div id="feed" class="feed-list"></div>
+        <button class="load-more" id="loadMore">Load more stories <span>↓</span></button>
+      </section>
+
+      <aside class="right-rail">
+        <section class="side-section profile-card">
+          <div class="profile-cover"></div><span class="avatar avatar-large avatar-you">AM</span><div class="profile-card-content"><div class="profile-title"><h3>Avery Miles</h3><span class="verified">✦</span></div><p>@averymiles</p><div class="profile-stats"><span><strong>248</strong> following</span><span><strong>1.8k</strong> followers</span></div></div>
+          <button class="view-profile" id="viewProfile">View profile <span>↗</span></button>
+        </section>
+        <section class="side-section"><div class="section-heading"><h2>People to follow</h2><button class="text-button" id="seeAllPeople">See all</button></div><div id="peopleList"></div></section>
+        <section class="side-section trends"><div class="section-heading"><h2>Trending today</h2><button class="more-button" aria-label="More trends">•••</button></div><div class="trend-item"><span class="trend-number">01</span><div><strong>#slowdesign</strong><p>2,430 conversations</p></div><span class="trend-arrow">↗</span></div><div class="trend-item"><span class="trend-number">02</span><div><strong>#thelongread</strong><p>1,982 conversations</p></div><span class="trend-arrow">↗</span></div><div class="trend-item"><span class="trend-number">03</span><div><strong>#offthegrid</strong><p>846 conversations</p></div><span class="trend-arrow">↗</span></div></section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden><section class="compose-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="close-modal" id="closeModal" aria-label="Close">×</button><p class="eyebrow">SHARE WITH YOUR PEOPLE</p><h2 id="modalTitle">What’s on your mind?</h2><textarea id="postText" placeholder="Write something worth sharing..." rows="5"></textarea><label class="image-picker"><span>▧</span><span id="postImageLabel">Add an image to your post</span><input id="postImageInput" type="file" accept="image/jpeg,image/png,image/webp" /></label><img class="image-preview" id="postImagePreview" alt="Selected post preview" hidden /><div class="modal-footer"><span id="characterCount">0 / 280</span><button class="post-button" id="publishButton">Publish <span>↗</span></button></div></section></div>
+  <input id="profileImageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+  <div class="utility-backdrop" id="utilityBackdrop" hidden><section class="utility-modal" role="dialog" aria-modal="true" aria-labelledby="utilityTitle"><button class="close-modal" id="closeUtility" aria-label="Close">×</button><p class="eyebrow" id="utilityEyebrow">GATHER</p><h2 id="utilityTitle">Details</h2><div id="utilityContent"></div></section></div>
+  <div class="profile-backdrop" id="profileBackdrop" hidden><section class="profile-editor" role="dialog" aria-modal="true" aria-labelledby="profileEditorTitle"><button class="close-modal" id="closeProfileEditor" aria-label="Close">×</button><p class="eyebrow">YOUR PROFILE</p><h2 id="profileEditorTitle">Make it yours.</h2><button class="profile-photo-editor" id="profilePhotoEditor" type="button" aria-label="Change profile image"><span class="profile-editor-avatar" id="profileEditorAvatar"></span><span class="camera-overlay" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Zm8 3.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z" /></svg></span></button><p class="profile-photo-hint">Click your photo to choose a new image</p><form id="profileForm" class="profile-form"><label>Name<input id="profileNameInput" maxlength="50" required /></label><label>Handle<input id="profileHandleInput" maxlength="30" required /></label><label>Bio<textarea id="profileBioInput" maxlength="160" rows="3"></textarea></label><div class="profile-editor-actions"><button class="utility-action" id="logoutButton" type="button">Log out</button><button class="post-button" type="submit">Save changes <span>↗</span></button></div></form></section></div>
+  <div class="comment-backdrop" id="commentBackdrop" hidden><section class="utility-modal comment-modal" role="dialog" aria-modal="true" aria-labelledby="commentTitle"><button class="close-modal" id="closeComment" aria-label="Close">×</button><p class="eyebrow">JOIN THE THREAD</p><h2 id="commentTitle">Comments</h2><div id="commentList" class="comment-list"></div><form id="commentForm" class="comment-form"><input id="commentInput" placeholder="Add your thought..." maxlength="280" required /><button class="post-button" type="submit">Reply <span>↗</span></button></form></section></div>
+  <aside class="chat-drawer" id="chatDrawer" aria-label="Messages"><div class="chat-header"><div><p class="eyebrow">INBOX</p><h2>Messages</h2></div><button class="close-chat" id="closeChat" aria-label="Close messages">×</button></div><div class="chat-search">⌕ <input id="conversationSearch" placeholder="Search messages" /></div><p class="chat-instruction">Choose someone below, then type in the box at the bottom.</p><div id="conversationList" class="conversation-list"></div><div class="chat-empty" id="chatEmpty"><span>◌</span><p>Choose someone to chat</p><small>Your message box is ready below.</small></div><section class="message-panel" id="messagePanel"><div class="message-contact" id="messageContact">Select a person to chat</div><div class="message-list" id="messageList"></div><form class="message-form" id="messageForm"><input id="messageInput" placeholder="Type your message here..." autocomplete="off" required /><button type="submit" aria-label="Send message">↗</button></form></section></aside>
+  <script src="app.js"></script>
+</body>
+</html>
